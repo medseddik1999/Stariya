@@ -2,6 +2,7 @@
 suppressPackageStartupMessages({
   library(shiny)
   library(shinydashboard)
+  library(shinymanager)     # ← NEW (login / secure_server)
   library(shinyWidgets)
   library(shinyjs)
   library(DT)
@@ -11,6 +12,7 @@ suppressPackageStartupMessages({
   library(DBI)
   library(RSQLite)
   library(pool)
+  library(scrypt)           # ← NEW (hashPassword)
 })
 
 source("R/config.R")

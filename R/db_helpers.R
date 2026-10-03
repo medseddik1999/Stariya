@@ -402,4 +402,34 @@ opportunity_series <- function(actor) {
      WHERE organization_id = ?
     ORDER BY value DESC, name", list(actor$organization_id)
   )
+} 
+
+
+
+# ---------- notifications ----------
+get_notifications <- function(actor, limit = 10) {
+  assert_permission(actor, "read_dashboard")
+  db_query(
+    sprintf(
+      "SELECT id, type, title, message, read_status, created_at
+       FROM notifications
+       WHERE organization_id = ?
+         AND (user_id IS NULL OR user_id = ?)
+       ORDER BY created_at DESC, id DESC
+       LIMIT %d",
+      as.integer(limit)
+    ),
+    list(actor$organization_id, actor$user_id)
+  )
+}
+
+count_unread_notifications <- function(actor) {
+  assert_permission(actor, "read_dashboard")
+  db_query(
+    "SELECT COUNT(*) AS n FROM notifications
+     WHERE organization_id = ?
+       AND (user_id IS NULL OR user_id = ?)
+       AND read_status = 0",
+    list(actor$organization_id, actor$user_id)
+  )$n[[1]]
 }

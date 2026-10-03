@@ -419,4 +419,10 @@ table.dataTable.no-footer { border-bottom: none !important; }
   .header-actions { width: 100%; flex-wrap: wrap; }
   .kanban-board { grid-template-columns: repeat(4, minmax(250px, 82vw)); }
   .panel-period { display: none; }
-}
+} 
+
+
+.user-toggle { display: flex !important; align-items: center; gap: 10px; }
+.user-toggle > .fa-chevron-down { margin-left: 4px; }
+.user-summary .user-mail:empty { display: none; }
+.user-menu .user-mail:empty { display: none; }

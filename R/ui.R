@@ -14,32 +14,41 @@ app_ui <- function() {
           tags$input(type = "text", placeholder = "Search anything")
         )
       ),
+
+      # ---- Notifications : <li> statique, contenu dynamique ----
       tags$li(class = "dropdown",
         tags$a(href = "#", class = "dropdown-toggle", `data-toggle` = "dropdown",
-          shiny::icon("bell"), tags$span(class = "badge-dot")),
+          shiny::icon("bell"),
+          shiny::uiOutput("header_notif_badge", inline = TRUE)
+        ),
         tags$ul(class = "dropdown-menu dropdown-menu-right notif-menu",
-          tags$li(class = "notif-head", "Notifications"),
-          tags$li(tags$a(href = "#", "2 tâches arrivent à échéance")),
-          tags$li(tags$a(href = "#", "Nouveau lead : Vandelay Industries"))
+          shiny::uiOutput("header_notif_items")
         )
       ),
+
+      # ---- User menu : <li> statique, contenu dynamique ----
       tags$li(class = "dropdown",
         tags$a(href = "#", class = "dropdown-toggle user-toggle", `data-toggle` = "dropdown",
-          div(class = "user-avatar", "JD"),
+          div(class = "user-avatar",
+              shiny::textOutput("header_initials", inline = TRUE)),
           div(class = "user-summary",
-            div(class = "user-name", "John Doe"),
-            div(class = "user-mail", "john@acme.io")
+            div(class = "user-name", shiny::textOutput("header_primary_top", inline = TRUE)),
+            div(class = "user-mail", shiny::textOutput("header_email_top",   inline = TRUE))
           ),
           icon("chevron-down")
         ),
         tags$ul(class = "dropdown-menu dropdown-menu-right user-menu",
           tags$li(class = "user-info",
-            div(class = "user-name", "John Doe"),
-            div(class = "user-mail", "john@acme.io")),
+            div(class = "user-name", shiny::textOutput("header_primary_menu", inline = TRUE)),
+            div(class = "user-mail", shiny::textOutput("header_email_menu",   inline = TRUE))
+          ),
           tags$li(class = "divider"),
           tags$li(tags$a(href = "#", shiny::icon("user"), " Profile")),
           tags$li(tags$a(href = "#", shiny::icon("gear"), " Settings")),
-          tags$li(tags$a(href = "#", shiny::icon("right-from-bracket"), " Logout"))
+          tags$li(tags$a(href = "#",
+            onclick = "Shiny.setInputValue('logout_trigger', Date.now(), {priority:'event'}); return false;",
+            shiny::icon("right-from-bracket"), " Logout"
+          ))
         )
       )
     ),
@@ -66,7 +75,7 @@ app_ui <- function() {
       shinyjs::useShinyjs(),
       tags$head(
         tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
-        tags$link(rel = "stylesheet", href = "css/custom.css?v=11"),
+        tags$link(rel = "stylesheet", href = "css/custom.css?v=12"),
         tags$script(src = "js/custom.js")
       ),
       shinydashboard::tabItems(
@@ -74,22 +83,19 @@ app_ui <- function() {
         shinydashboard::tabItem(tabName = "projects",   mod_projects_ui("projects")),
         shinydashboard::tabItem(tabName = "tasks",      mod_tasks_ui("tasks")),
         shinydashboard::tabItem(tabName = "customers",  mod_customers_ui("customers")),
-        shinydashboard::tabItem(tabName = "activities", mod_activities_ui("activities"))
-        ,shinydashboard::tabItem(tabName = "users", mod_users_ui("users"))
+        shinydashboard::tabItem(tabName = "activities", mod_activities_ui("activities")),
+        shinydashboard::tabItem(tabName = "users",      mod_users_ui("users"))
       )
     )
   )
 }
 
 app_ui_root <- function(request) {
-  if (auth_setup_required()) {
-    return(auth_setup_ui())
-  }
-
+  if (auth_setup_required()) return(auth_setup_ui())
   protected_ui <- shinymanager::secure_app(
     app_ui(),
     language = "fr",
-    head_auth = tags$head(tags$link(rel = "stylesheet", href = "css/custom.css?v=11"))
+    head_auth = tags$head(tags$link(rel = "stylesheet", href = "css/custom.css?v=12"))
   )
   protected_ui(request)
 }
