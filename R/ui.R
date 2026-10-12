@@ -75,7 +75,11 @@ app_ui <- function() {
       shinyjs::useShinyjs(),
       tags$head(
         tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
-        tags$link(rel = "stylesheet", href = "css/custom.css?v=12"),
+        tags$link(rel = "preconnect", href = "https://fonts.googleapis.com"),
+        tags$link(rel = "preconnect", href = "https://fonts.gstatic.com", crossorigin = NA),
+        tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Inter:wght@300;400;500;600;700&display=swap"),
+        tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"),
+        tags$link(rel = "stylesheet", href = "css/custom.css?v=13"),
         tags$script(src = "js/custom.js")
       ),
       shinydashboard::tabItems(

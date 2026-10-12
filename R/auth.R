@@ -218,56 +218,35 @@ auth_credentials <- function(user, password) {
 
   )
 
-  user_info <- data.frame(
-
-    user = row$email[[1]],
-
-    user_id = as.integer(row$id[[1]]),
-
+  user_info <- list(
+    user            = row$email[[1]],
+    user_id         = as.integer(row$id[[1]]),
     organization_id = as.integer(row$organization_id[[1]]),
-
-    role = row$role[[1]],
-
-    first_name = row$first_name[[1]],
-
-    last_name = row$last_name[[1]],
-
-    stringsAsFactors = FALSE
-
+    role            = row$role[[1]],
+    first_name      = row$first_name[[1]],
+    last_name       = row$last_name[[1]]
   )
 
   list(result = TRUE, expired = FALSE, authorized = TRUE, user_info = user_info)
-
 }
 
+
 auth_actor <- function(authenticated_user) {
-
   required <- c("user_id", "organization_id", "role")
-
   if (!all(required %in% names(authenticated_user)) ||
-
       !authenticated_user$role %in% auth_roles ||
-
       length(authenticated_user$user_id) != 1L ||
-
       length(authenticated_user$organization_id) != 1L) {
-
     stop("Session d'authentification invalide.", call. = FALSE)
-
   }
-
   list(
-
-    user_id = as.integer(authenticated_user$user_id),
-
+    user_id         = as.integer(authenticated_user$user_id),
     organization_id = as.integer(authenticated_user$organization_id),
-
-    role = as.character(authenticated_user$role),
-
-    email = as.character(authenticated_user$user %||% "")
-
+    role            = as.character(authenticated_user$role),
+    email           = as.character(authenticated_user$user %||% ""),
+    first_name      = as.character(authenticated_user$first_name %||% ""),
+    last_name       = as.character(authenticated_user$last_name  %||% "")
   )
-
 }
 
 role_can <- function(actor, permission) {
@@ -310,7 +289,15 @@ auth_setup_ui <- function() {
 
       shiny::tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
 
-      shiny::tags$link(rel = "stylesheet", href = "css/custom.css?v=11")
+      shiny::tags$link(rel = "preconnect", href = "https://fonts.googleapis.com"),
+
+      shiny::tags$link(rel = "preconnect", href = "https://fonts.gstatic.com", crossorigin = NA),
+
+      shiny::tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"),
+
+      shiny::tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"),
+
+      shiny::tags$link(rel = "stylesheet", href = "css/custom.css?v=13")
 
     ),
 

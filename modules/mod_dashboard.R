@@ -89,19 +89,27 @@ mod_dashboard_server <- function(id, actor) {
       df <- opportunity_series(actor())
       if (nrow(df) == 0) {
         return(plotly::plotly_empty(type = "bar", orientation = "h") %>%
-          plotly::layout(title = "No opportunities"))
+          plotly::layout(
+            title = list(text = "Aucune opportunité pour le moment", font = list(family = "Inter", size = 13, color = "#64748B")),
+            paper_bgcolor = "#FFFFFF", plot_bgcolor = "#FFFFFF"
+          ))
       }
       plotly::plot_ly(df, x = ~value, y = ~name, type = "bar", orientation = "h",
-                      color = I("#292936"),
+                      marker = list(
+                        color = "#6366F1",
+                        line = list(color = "#4F46E5", width = 1),
+                        cornerradius = 4
+                      ),
                       customdata = ~stage,
                       hovertemplate = paste0(
-                        "%{y}<br>Amount: $%{x:,.0f}",
-                        "<br>Stage: %{customdata}<extra></extra>"
+                        "<b>%{y}</b><br>Montant: €%{x:,.0f}",
+                        "<br>Étape: %{customdata}<extra></extra>"
                       )) %>%
         plotly::layout(
-          margin = list(t = 8, b = 28, l = 12, r = 16),
-          xaxis = list(title = "", tickformat = "$,.0f", showgrid = TRUE,
-                       gridcolor = "#ECECF0", zeroline = FALSE),
+          margin = list(t = 10, b = 28, l = 10, r = 16),
+          font = list(family = "Inter, sans-serif", size = 12, color = "#475569"),
+          xaxis = list(title = "", tickprefix = "€", showgrid = TRUE,
+                       gridcolor = "#F1F5F9", zeroline = FALSE),
           yaxis = list(title = "", autorange = "reversed", showgrid = FALSE),
           plot_bgcolor  = "#FFFFFF",
           paper_bgcolor = "#FFFFFF"
@@ -112,13 +120,15 @@ mod_dashboard_server <- function(id, actor) {
       df <- get_projects(actor()) %>% dplyr::filter(status == "in_progress") %>% head(6)
       if (nrow(df) == 0) return(empty_state("Aucun projet actif"))
       lapply(seq_len(nrow(df)), function(i) {
+        pct <- df$progress[i]
+        bar_color <- if (pct >= 80) "linear-gradient(90deg, #10B981, #059669)" else if (pct >= 40) "linear-gradient(90deg, #6366F1, #4F46E5)" else "linear-gradient(90deg, #F59E0B, #D97706)"
         div(class = "progress-row",
           div(class = "progress-top",
             span(class = "progress-name", df$name[i]),
-            span(class = "progress-pct",  paste0(df$progress[i], "%"))
+            span(class = "progress-pct",  paste0(pct, "%"))
           ),
           div(class = "progress-bar",
-            div(class = "progress-fill", style = sprintf("width:%s%%", df$progress[i]))
+            div(class = "progress-fill", style = sprintf("width:%s%%; background: %s;", pct, bar_color))
           )
         )
       })
@@ -126,13 +136,18 @@ mod_dashboard_server <- function(id, actor) {
 
     output$recent_activity <- renderUI({
       df <- get_activities(actor(), limit = 6)
-      if (nrow(df) == 0) return(empty_state())
+      if (nrow(df) == 0) return(empty_state("Aucune activité récente"))
       lapply(seq_len(nrow(df)), function(i) {
         div(class = "activity-row",
-          div(class = "activity-dot"),
+          div(class = "activity-dot-container",
+            div(class = "activity-dot")
+          ),
           div(class = "activity-body",
             div(class = "activity-title", df$description[i]),
-            div(class = "activity-meta", df$user_name[i], " · ", df$created_at[i])
+            div(class = "activity-meta",
+              tags$span(class = "activity-user", icon("user"), df$user_name[i]),
+              tags$span(class = "activity-time", icon("clock"), df$created_at[i])
+            )
           )
         )
       })
@@ -142,13 +157,13 @@ mod_dashboard_server <- function(id, actor) {
       df <- get_tasks(actor()) %>%
         dplyr::filter(status != "done", !is.na(due_date)) %>%
         dplyr::arrange(due_date) %>% head(6)
-      if (nrow(df) == 0) return(empty_state())
+      if (nrow(df) == 0) return(empty_state("Aucune tâche à venir"))
       lapply(seq_len(nrow(df)), function(i) {
         div(class = "task-row",
           div(class = "task-main", df$title[i]),
           div(class = "task-meta",
-            tags$span(class = "task-project", df$project_name[i] %||% "—"),
-            tags$span(class = "task-date",    format_date(df$due_date[i]))
+            tags$span(class = "task-project", icon("folder"), df$project_name[i] %||% "Général"),
+            tags$span(class = "task-date", icon("calendar-days"), format_date(df$due_date[i]))
           )
         )
       })

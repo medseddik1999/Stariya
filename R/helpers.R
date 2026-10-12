@@ -20,7 +20,9 @@ status_badge <- function(status) {
     s %in% c("cancelled","lost","inactive")               ~ "badge-danger",
     TRUE ~ "badge-muted"
   )
-  sprintf('<span class="badge %s">%s</span>', cls, status)
+  display_label <- gsub("_", " ", status %||% "")
+  display_label <- paste0(toupper(substr(display_label, 1, 1)), substring(display_label, 2))
+  sprintf('<span class="badge %s"><span class="badge-dot-sm"></span>%s</span>', cls, display_label)
 }
 
 priority_badge <- function(priority) {
@@ -31,20 +33,21 @@ priority_badge <- function(priority) {
     p == "low"                ~ "badge-muted",
     TRUE ~ "badge-muted"
   )
-  sprintf('<span class="badge %s">%s</span>', cls, priority)
+  display_label <- paste0(toupper(substr(priority %||% "", 1, 1)), substring(priority %||% "", 2))
+  sprintf('<span class="badge %s"><span class="badge-dot-sm"></span>%s</span>', cls, display_label)
 }
 
 action_buttons <- function(ns, ids) {
   vapply(ids, function(id) {
     sprintf(
       '<div class="action-buttons">
-         <button class="btn-action" title="Edit"
+         <button class="btn-action btn-action-edit" title="Edit"
            onclick="Shiny.setInputValue(\'%s\', %d, {priority:\'event\'})">
-           <i class="fa fa-pen"></i>
+           <i class="fa-solid fa-pen-to-square"></i>
          </button>
          <button class="btn-action btn-action-danger" title="Delete"
            onclick="Shiny.setInputValue(\'%s\', %d, {priority:\'event\'})">
-           <i class="fa fa-trash"></i>
+           <i class="fa-solid fa-trash-can"></i>
          </button>
        </div>',
       ns("edit_id"), id, ns("delete_id"), id
@@ -53,16 +56,23 @@ action_buttons <- function(ns, ids) {
 }
 
 kpi_card <- function(label, value_id, delta = NULL, icon_name = "chart-line", variant = "default") {
-  div(class = "kpi-card",
+  div(class = paste("kpi-card", paste0("kpi-variant-", variant)),
     div(class = "kpi-topline",
       div(class = "kpi-label", label),
       div(class = paste("kpi-icon", paste0("kpi-icon-", variant)), icon(icon_name))
     ),
     div(class = "kpi-value", textOutput(value_id, inline = TRUE)),
-    if (!is.null(delta)) div(class = "kpi-delta", icon("arrow-trend-up"), span(delta), " vs last month")
+    if (!is.null(delta)) {
+      div(class = "kpi-delta", icon("arrow-trend-up"), span(delta), " vs last month")
+    } else {
+      div(class = "kpi-meta", "Updated live")
+    }
   )
 }
 
 empty_state <- function(msg = "Nothing here yet.") {
-  div(class = "empty-state", icon("inbox"), tags$p(msg))
+  div(class = "empty-state",
+    div(class = "empty-state-icon", icon("inbox")),
+    tags$p(class = "empty-state-msg", msg)
+  )
 }
